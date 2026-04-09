@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Универсальный тренажер</title>
+    
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    
+    <script src="themes_and_tasks/algebra_8_equations.js"></script>
+	<script src="themes_and_tasks/algebra_10_trigonometry.js"></script>
+	<script src="themes_and_tasks/algebra_11_log_equations.js"></script>
+	<script src="themes_and_tasks/algebra_8_linear_inequalities.js"></script>
+	<script src="themes_and_tasks/algebra_8_linear_inequalities_system.js"></script>
+	
+	
+	<script>
+		window.MathJax = {
+		  tex: {
+			inlineMath: [['$', '$'], ['\\(', '\\)']],
+			processEscapes: true
+		  },
+		  options: {
+			enableMenu: false,
+			// ОТКЛЮЧАЕМ автоматический поиск формул при загрузке страницы
+			renderAtStart: false 
+		  },
+		  startup: {
+			typeset: false 
+		  }
+		};
+	</script>
+	<script id="MathJax-script" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+		
+	
+    <style>
+        :root { --bg: #f4f7f6; --accent: #0984e3; --white: #ffffff; --text: #2d3436; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); display: flex; justify-content: center; padding: 20px; }
+        .app-card { background: var(--white); padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 100%; max-width: 500px; }
+        .hidden { display: none; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-size: 0.85em; color: #636e72; }
+        select, input { width: 100%; padding: 12px; border: 1px solid #dfe6e9; border-radius: 8px; box-sizing: border-box; }
+        .btn { width: 100%; padding: 12px; background: var(--accent); color: white; border: none; border-radius: 8px; cursor: pointer; margin-top: 10px; }
+        .mode-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .btn-opt { background: #ecf0f1; color: var(--text); border: 1px solid #bdc3c7; }
+        .btn-opt:hover { background: #dfe6e9; }
+    </style>
+</head>
+<body>
+
+<div class="app-card">
+    <section id="auth-section">
+        <h2 id="auth-title">Авторизуйся, чтобы выполнить задание по математике</h2>
+        <input type="text" id="user-last-name" placeholder="Фамилия" style="margin-bottom:10px">
+        <input type="text" id="user-first-name" placeholder="Имя">
+        <button class="btn" id="login-btn">Войти</button>
+    </section>
+
+    <section id="menu-section" class="hidden">
+        <h2>Настройка занятия</h2>
+        <div class="form-group">
+            <label>Предмет</label>
+            <select id="select-subject"><option value="">-- Загрузка... --</option></select>
+        </div>
+        <div class="form-group">
+            <label>Класс</label>
+            <select id="select-grade" disabled><option value="">-- Выберите предмет --</option></select>
+        </div>
+        <div class="form-group">
+            <label>Тема</label>
+            <select id="select-topic" disabled><option value="">-- Выберите класс --</option></select>
+        </div>
+        <div class="form-group">
+            <label>Режим</label>
+            <select id="select-mode">
+                <option value="practice">Тренажер</option>
+                <option value="competition">Соревнование (пара)</option>
+            </select>
+        </div>
+        <button class="btn" id="start-btn">Начать</button>
+    </section>
+
+        <div id="content">
+			<section id="game-section" class="hidden">
+				<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+					<span id="player-display" style="font-weight: bold; color: var(--accent);"></span>
+					<span id="progress-text" style="font-size: 0.9em; color: #636e72;">Вопрос 1 из 5</span>
+				</div>
+
+				<div style="width: 100%; height: 6px; background: #eee; border-radius: 3px; margin-bottom: 25px;">
+					<div id="progress-bar" style="width: 0%; height: 100%; background: var(--accent); border-radius: 3px; transition: 0.3s;"></div>
+				</div>
+
+				<div id="task-area">
+					<div id="equation-text" style="font-size: 1.5em; text-align: center; margin-bottom: 30px; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+						</div>
+
+					<div id="options-grid" class="mode-grid">
+						</div>
+				</div>
+				
+				<div id="feedback-container" class="hidden" style="margin-top: 20px; padding: 15px; border-radius: 8px; text-align: left;">
+					<strong id="feedback-title"></strong>
+					<p id="feedback-text" style="margin-top: 5px; line-height: 1.4;"></p>
+					<button class="btn" id="next-q-btn" style="display: none; background: var(--text); margin-top: 10px;">Далее</button>
+				</div>
+
+
+				<div style="margin-top: 30px; text-align: center;">
+					<button id="hint-trigger" style="background: none; border: none; color: #b2bec3; cursor: pointer; text-decoration: underline; font-size: 0.9em;">
+						Мне нужна подсказка
+					</button>
+					<p id="hint-content" class="hidden" style="margin-top: 10px; color: #d63031; font-style: italic; font-size: 0.9em;"></p>
+				</div>
+			</section>		
+		</div>
+</div>
+
+<script>
+$(document).ready(function() {
+    // 1. Глобальное состояние
+    const session = {
+        player1: { 
+			name: '',
+			score: 0,
+			correctCount: 0,
+			wrongCount: 0,
+			hintsUsed: 0 },
+        player2: { name: '' },
+        isPairMode: false,
+        activeTopic: null,
+        currentQIndex: 0,
+		
+		// Константы системы оценивания
+		POINTS_CORRECT: 1,
+		POINTS_HINT_PENALTY: 0.5,
+		POINTS_WRONG: 0
+
+    };
+
+    // 2. Инициализация меню из реестра (AppRegistry)
+    function initMenu() {
+		console.log("Содержимое реестра:", window.AppRegistry);
+        const subjects = [...new Set(window.AppRegistry.map(item => item.subject))];
+        const subSelect = $('#select-subject');
+        subSelect.empty().append('<option value="">-- Выберите предмет --</option>');
+        subjects.forEach(s => subSelect.append(`<option value="${s}">${s}</option>`));
+		
+    }
+
+    // Логика каскадных списков (Предмет -> Класс -> Тема)
+    $('#select-subject').on('change', function() {
+        const sub = $(this).val();
+        const grades = [...new Set(window.AppRegistry.filter(i => i.subject === sub).map(i => i.grade))];
+        
+        $('#select-grade').empty().append('<option value="">-- Выберите класс --</option>')
+            .prop('disabled', !sub);
+        grades.sort((a,b) => a-b).forEach(g => $('#select-grade').append(`<option value="${g}">${g}</option>`));
+        $('#select-topic').prop('disabled', true).empty();
+    });
+
+    $('#select-grade').on('change', function() {
+        const sub = $('#select-subject').val();
+        const grade = $(this).val();
+        const topics = window.AppRegistry.filter(i => i.subject === sub && i.grade === grade);
+
+        $('#select-topic').empty().append('<option value="">-- Выберите тему --</option>')
+            .prop('disabled', !grade);
+        topics.forEach(t => $('#select-topic').append(`<option value="${t.topic_id}">${t.topic_name}</option>`));
+    });
+
+    // 3. Логика авторизации
+    $('#login-btn').on('click', function() {
+        const f = $('#user-first-name').val();
+        const l = $('#user-last-name').val();
+        if (!f || !l) return alert("Заполните данные");
+
+        if (session.isPairMode) {
+            session.player2.name = l + " " + f;
+            startLearning();
+        } else {
+            session.player1.name = l + " " + f;
+            $('#auth-section').hide();
+            $('#menu-section').show();
+            initMenu();
+        }
+    });
+
+    // 4. Запуск приложения
+	$('#start-btn').on('click', function() {
+		const tid = $('#select-topic').val(); // Получаем ID из выпадающего списка
+		if (!tid) return alert("Выберите тему");
+
+		// ВАЖНО: Ищем объект в реестре по полю topic_id
+		session.activeTopic = window.AppRegistry.find(t => t.topic_id === tid);
+		
+		// Если тема не найдена в реестре
+		if (!session.activeTopic) {
+			console.error("Тема не найдена в реестре AppRegistry для ID:", tid);
+			return alert("Ошибка: данные темы не загружены.");
+		}
+
+		session.currentQIndex = 0; // Сбрасываем индекс вопроса перед началом
+
+		if ($('#select-mode').val() === 'competition') {
+			session.isPairMode = true;
+			$('#auth-title').text('Авторизация второго игрока');
+			$('#user-first-name, #user-last-name').val('');
+			$('#menu-section').hide();
+			$('#auth-section').show();
+		} else {
+			startLearning();
+		}
+	});
+
+	function startLearning() {
+		$('#auth-section, #menu-section').hide();
+		$('#game-section').show();
+		
+		// Показываем, кто сейчас решает (важно для соревнований)
+		$('#player-display').text(session.isPairMode ? `Ход: ${session.player1.name}` : session.player1.name);
+		
+		renderQuestion();
+	}
+
+	function renderQuestion() {
+		const q = session.activeTopic.questions[session.currentQIndex];
+		const total = session.activeTopic.questions.length;
+
+		// Обновляем прогресс
+		$('#progress-text').text(`Вопрос ${session.currentQIndex + 1} из ${total}`);
+		$('#progress-bar').css('width', `${(session.currentQIndex / total) * 100}%`);
+		
+		// Вставляем данные как простой текст
+		const eqArea = document.getElementById('equation-text');
+		const hintArea = document.getElementById('hint-content');
+		
+		eqArea.innerText = q.text; // Используем innerText вместо html
+		hintArea.innerText = q.hint;
+		$(hintArea).addClass('hidden');
+		$('#hint-trigger').show();
+
+		const grid = $('#options-grid').empty();
+		const shuffled = [...q.options].sort(() => Math.random() - 0.5);
+		
+		shuffled.forEach(opt => {
+			// Создаем кнопку без текста
+			const btn = document.createElement('button');
+			btn.className = 'btn btn-opt';
+			btn.innerText = opt; // Вставляем формулу как текст
+			
+			btn.onclick = function() {
+				handleAnswer(opt, q); 
+			};
+			grid.append(btn);
+		});
+
+		// Теперь, когда ВСЕ элементы на месте, просим MathJax их обработать
+		// Мы делаем это с небольшой задержкой (0 мс), чтобы браузер успел отрисовать DOM
+		setTimeout(() => {
+			if (window.MathJax && window.MathJax.typesetPromise) {
+				// Очищаем предыдущее состояние и рендерим заново
+				MathJax.typesetClear();
+				MathJax.typesetPromise().catch(err => console.log("MathJax error:", err));
+			}
+		}, 0);
+	}	
+	
+	function handleAnswer(selected, question) {
+		$('.btn-opt').prop('disabled', true);
+		const feedback = $('#feedback-container');
+		const title = $('#feedback-title');
+		//const text = $('#feedback-text');
+		///////////////////
+		const fText = document.getElementById('feedback-text');
+
+		feedback.removeClass('hidden').hide().fadeIn(300);
+
+		if (selected === question.correct) {
+			session.player1.score += session.POINTS_CORRECT;
+			session.player1.correctCount++;
+			
+			feedback.css({'background-color': '#e3fcef', 'color': '#006b3d', 'border': '1px solid #abf5d1'});
+			$('#feedback-title').text("✨ Верно!");
+			fText.innerText = "Задание выполнено правильно.";
+		} else {
+			session.player1.wrongCount++;
+			feedback.css({'background-color': '#ffebe6', 'color': '#bf2600', 'border': '1px solid #ffbdad'});
+			$('#feedback-title').text("🧐 Разбор:");
+			// Вставляем текст решения
+			fText.innerText = `Правильный ответ: ${question.correct}\n\nРешение: ${question.solution}`;
+		}
+		updateLiveStats();
+		$('#next-q-btn').show();
+
+		// Рендерим блок ответа
+		if (window.MathJax) {
+			MathJax.typesetPromise([fText]);
+		}
+	}
+	
+	function updateLiveStats() {
+		const total = session.activeTopic.questions.length;
+		const statsHtml = `
+			<span style="color: #00b894;">${session.player1.correctCount}</span> / 
+			<span style="color: #d63031;">${session.player1.wrongCount}</span> 
+			из ${total}
+		`;
+		$('#progress-text').html(statsHtml);
+	}
+	
+// Обработчик для кнопки "Далее"
+$(document).on('click', '#next-q-btn', function() {
+    $('#feedback-container').addClass('hidden');
+    $(this).hide();
+    
+    session.currentQIndex++;
+    
+    if (session.currentQIndex < session.activeTopic.questions.length) {
+        renderQuestion();
+    } else {
+        finishSession();
+    }
+});
+
+	function finishSession() {
+		$('#progress-bar').css('width', '100%');
+		
+		// Получаем текущую дату и время
+		const now = new Date();
+		const dateTimeString = now.toLocaleDateString() + ' ' + now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+		
+		const totalQuestions = session.activeTopic.questions.length;
+		const percent = Math.round((session.player1.correctCount / totalQuestions) * 100);
+		
+		let mark = "";
+		let markDescription = "";
+		let markColor = "";
+
+		// Логика оценки
+		if (percent >= 91) {
+			mark = "5"; markDescription = "Отлично"; markColor = "#00b894";
+		} else if (percent >= 71) {
+			mark = "4"; markDescription = "Хорошо"; markColor = "#0984e3";
+		} else if (percent >= 51) {
+			mark = "3"; markDescription = "Удовлетворительно"; markColor = "#fdcb6e";
+		} else {
+			mark = "2"; markDescription = "Неудовлетворительно"; markColor = "#d63031";
+		};
+		
+		let mark_point = percent >= 91 ? "5" : percent >= 71 ? "4" : percent >= 51 ? "3" : "2";
+		
+		// Собираем объект для отправки
+		const reportData = {
+			date: now.toLocaleString(),
+			name: session.player1.name,
+			grade: session.activeTopic.grade,
+			subject: session.activeTopic.subject,
+			topic: session.activeTopic.topic_name,
+			correct: session.player1.correctCount,
+			wrong: session.player1.wrongCount,
+			hints: session.player1.hintsUsed,
+			score: session.player1.score.toFixed(1),
+			mark: mark_point
+		};
+
+		// Отправляем "тихо" в таблицу
+		sendDataToGoogle(reportData);
+
+		// Формируем финальный отчет
+		const finalHtml = `
+			<div style="text-align: center; padding: 10px;">
+				<h2 style="margin-bottom: 15px; color: #2d3436;">Результаты тестирования</h2>
+				
+				<div style="text-align: left; background: #f1f2f6; padding: 15px; border-radius: 10px; margin-bottom: 20px; font-size: 0.9rem; line-height: 1.6; border-left: 5px solid ${markColor};">
+					<b>Ученик:</b> ${session.player1.name}<br>
+					<b>Класс:</b> ${session.activeTopic.grade || '—'} класс<br>
+					<b>Предмет:</b> ${session.activeTopic.subject || 'Алгебра'}<br>
+					<b>Тема:</b> ${session.activeTopic.topic_name}<br>
+					<b>Дата и время:</b> ${dateTimeString}
+				</div>
+
+				<div style="font-size: 5rem; font-weight: bold; color: ${markColor}; line-height: 1; margin-top: 10px;">
+					${mark}
+				</div>
+				<div style="font-size: 1.4rem; color: #636e72; margin-bottom: 20px;">
+					${markDescription}
+				</div>
+
+				<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: left; background: white; padding: 15px; border-radius: 10px; border: 1px solid #dfe6e9; margin-bottom: 20px; font-size: 0.95rem;">
+					<div style="color: #636e72;">Верных ответов:</div>
+					<div style="text-align: right;"><b>${session.player1.correctCount} из ${totalQuestions}</b></div>
+					
+					<div style="color: #636e72;">Ошибок:</div>
+					<div style="text-align: right;"><b>${session.player1.wrongCount}</b></div>
+					
+					<div style="color: #636e72;">Подсказок:</div>
+					<div style="text-align: right;"><b>${session.player1.hintsUsed}</b></div>
+					
+					<div style="border-top: 2px solid #dfe6e9; padding-top: 8px;"><b>Итоговый балл:</b></div>
+					<div style="border-top: 2px solid #dfe6e9; padding-top: 8px; text-align: right; color: ${markColor};"><b>${session.player1.score.toFixed(1)}</b></div>
+				</div>
+
+				<button class="btn btn-primary" onclick="location.reload()" style="width: 100%; padding: 12px; font-weight: bold;">
+					Завершить работу
+				</button>
+			</div>
+		`;
+
+		// Рендерим в основное окно приложения
+		$('.app-card').fadeOut(300, function() {
+			$(this).html(finalHtml).fadeIn(300);
+		});
+	
+	}
+
+	// Обработчик подсказки
+	$('#hint-trigger').on('click', function() {
+		$(this).hide();
+		$('#hint-content').removeClass('hidden');
+		
+		//ТОЛЬКО ОДИН ПОЛЬЗОВАТЕЛЬ!!!!!
+		session.player1.score -= session.POINTS_HINT_PENALTY;
+		session.player1.hintsUsed++;
+		
+	});
+
+    window.checkAnswer = function(val) {
+        const q = session.activeTopic.questions[session.currentQIndex];
+        if (val === q.correct) {
+            alert("Верно!");
+            session.currentQIndex++;
+            if (session.currentQIndex < session.activeTopic.questions.length) {
+                renderQuestion();
+            } else {
+                alert("Тема завершена!");
+                location.reload();
+            }
+        } else {
+            alert("Ошибка! Правильный ответ: " + q.correct + "\n\nРешение: " + q.solution);
+        }
+    };
+
+
+	function sendDataToGoogle(reportData) {
+		const scriptUrl = "https://script.google.com/macros/s/AKfycbwcFlp_NhFWvFqwtTIV0Ha5zpCT5j-S9dr2rWX-y3CXZv4S-Y01CFcPwB5DeGhNMElN/exec"; // Вставьте сюда полученную ссылку
+
+		fetch(scriptUrl, {
+			method: "POST",
+			mode: "no-cors", // Позволяет отправлять данные на другой домен
+			cache: "no-cache",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(reportData)
+		})
+		.then(() => console.log("Данные сохранены и отправлены в электронный журнал"))
+		.catch(err => console.error("Ошибка отправки:", err));
+	}
+	
+});
+</script>
+</body>
+</html>
