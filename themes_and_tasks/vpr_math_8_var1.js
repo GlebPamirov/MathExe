@@ -85,7 +85,7 @@ const vpr_8_var1_data = [
 if (!window.AppRegistry) window.AppRegistry = [];
 vpr_8_var1_data.forEach(topic => {
     window.AppRegistry.push({
-        subject: "Математика",
+        subject: "ВПР Математика",
         grade: "8",
         topic_id: topic.topic_id,
         topic_name: topic.topic_name,
