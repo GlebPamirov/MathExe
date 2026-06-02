@@ -3,7 +3,7 @@
    Формат данных полностью адаптирован под структуру ядра Smart Journal.
 */
 
-const ege_math_repetition_data = [
+const ege_math_repetition_may_2nd = [
     {
         topic_id: "ege_expressions_repetition",
         topic_name: "Вычисления и преобразования",
@@ -298,7 +298,7 @@ const ege_math_repetition_data = [
 // Регистрация в глобальном реестре
 if (!window.AppRegistry) window.AppRegistry = [];
 
-ege_base_11_data.forEach(topic => {
+ege_math_repetition_may_2nd.forEach(topic => {
     window.AppRegistry.push({
         subject: "ЕГЭ математика",
         grade: "11",
