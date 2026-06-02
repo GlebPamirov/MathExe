@@ -6,7 +6,7 @@
 const ege_math_repetition_data = [
     {
         topic_id: "ege_expressions_repetition",
-        topic_name: "Вычисления и преобразования (Подготовка к ЕГЭ)",
+        topic_name: "Вычисления и преобразования",
         fgos_code: "1.1.2", 
         questions: [
             // БЛОК 1: Повторение свойств логарифмов (6 заданий)
@@ -295,3 +295,16 @@ const ege_math_repetition_data = [
         ]
     }
 ];
+
+// Регистрация в глобальном реестре
+if (!window.AppRegistry) window.AppRegistry = [];
+
+ege_base_11_data.forEach(topic => {
+    window.AppRegistry.push({
+        subject: "ЕГЭ математика",
+        grade: "11",
+        topic_id: topic.topic_id,
+        topic_name: topic.topic_name,
+        questions: topic.questions
+    });
+});
