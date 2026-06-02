@@ -7,7 +7,6 @@ const ege_math_repetition_data = [
     {
         topic_id: "ege_expressions_repetition",
         topic_name: "Вычисления и преобразования",
-        fgos_code: "1.1.2", 
         questions: [
             // БЛОК 1: Повторение свойств логарифмов (6 заданий)
             {
