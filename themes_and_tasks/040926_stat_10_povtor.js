@@ -1,6 +1,6 @@
 /* БАЗА ЗАДАНИЙ: Вероятность и статистика 7–8 классы (Повторение) */
 
-const prob_stat_7_8_data = [
+const prob_stat_10_data = [
     {
         topic_id: "prob_stat_10",
         topic_name: "ДЗ от 04.09.26 Вероятность и статистика (повторение за 9 класс)",
@@ -93,7 +93,7 @@ const prob_stat_7_8_data = [
 
 if (!window.AppRegistry) window.AppRegistry = [];
 
-prob_stat_7_8_data.forEach(topic => {
+prob_stat_10_data.forEach(topic => {
     window.AppRegistry.push({
         subject: "Вероятность и статистика",
         grade: "10",
